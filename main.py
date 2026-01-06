@@ -148,6 +148,14 @@ df_dashboard = df_dashboard.drop_duplicates(
     keep="last"
 )
 
+df_dashboard["Created_at"] = df_dashboard["Created_at"].dt.strftime("%d/%m/%Y").where(
+    df_dashboard["Created_at"].notna()
+)
+df_dashboard["Closed_at"] = df_dashboard["Closed_at"].dt.strftime("%d/%m/%Y").where(
+    df_dashboard["Closed_at"].notna()
+)
+
+
 # ===================== WRITE TO GSHEET =====================
 try:
     ws_target = sh.worksheet(TARGET_SHEET)
