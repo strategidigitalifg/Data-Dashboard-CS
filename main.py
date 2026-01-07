@@ -148,12 +148,18 @@ df_dashboard = df_dashboard.drop_duplicates(
     keep="last"
 )
 
-df_dashboard["Created_at"] = df_dashboard["Created_at"].dt.strftime("%d/%m/%Y").where(
-    df_dashboard["Created_at"].notna()
-)
-df_dashboard["Closed_at"] = df_dashboard["Closed_at"].dt.strftime("%d/%m/%Y").where(
-    df_dashboard["Closed_at"].notna()
-)
+df_dashboard["Created_at"] = pd.to_datetime(
+    df_dashboard["Created_at"],
+    dayfirst=True,
+    errors="coerce"
+).dt.strftime("%d/%m/%Y")
+
+df_dashboard["Closed_at"] = pd.to_datetime(
+    df_dashboard["Closed_at"],
+    dayfirst=True,
+    errors="coerce"
+).dt.strftime("%d/%m/%Y")
+
 
 
 # ===================== WRITE TO GSHEET =====================
