@@ -91,47 +91,13 @@ df_raw["Closed_hours_clean"] = (
     .dt.time
 )
 
-# COMBINE DATE + HOUR
-# df_raw["Created_ts"] = df_raw.apply(
-#     lambda r: combine_date_hour(
-#         r["Created_at"], r["Created_hours_clean"]
-#     ),
-#     axis=1
-# )
+df_raw["Created_ts"] = pd.to_datetime(
+    df_raw["Created_at"].astype(str) + " " + df_raw["Created_hours_clean"].astype(str),
+    errors="coerce")
 
-# df_raw["Closed_ts"] = df_raw.apply(
-#     lambda r: combine_date_hour(
-#         r["Closed_at"], r["Closed_hours_clean"]
-#     ),
-#     axis=1
-# )
-
-# # WEEKDAY
-# df_raw["Created_weekday"] = (
-#     df_raw["Created_at"]
-#     .dt.day_name()
-#     .str.lower()
-# )
-
-# # SOLVED HOURS
-# df_raw["Solved_hours"] = df_raw.apply(
-#     lambda r: diff_hours_business(
-#         r["Created_ts"], r["Closed_ts"]
-#     ),
-#     axis=1
-# )
-
-# Combine datetime
-df_raw["Created_ts"] = df_raw.apply(
-    lambda r: combine_date_hour(r["Created_at"], r["Created_hours_clean"]),
-    axis=1
-)
-
-df_raw["Closed_ts"] = df_raw.apply(
-    lambda r: combine_date_hour(r["Closed_at"], r["Closed_hours_clean"]),
-    axis=1
-)
-
+df_raw["Closed_ts"] = pd.to_datetime(
+    df_raw["Closed_at"].astype(str) + " " + df_raw["Closed_hours_clean"].astype(str),
+    errors="coerce")
 # Remove timezone (kalau ada)
 df_raw["Created_ts"] = df_raw["Created_ts"].dt.tz_localize(None)
 df_raw["Closed_ts"] = df_raw["Closed_ts"].dt.tz_localize(None)
