@@ -36,20 +36,21 @@ def read_sheet(sheet_name):
         .dropna(how="all")
     )
 
-def combine_date_hour(date_val, hour_val):
-    if pd.isna(date_val) or pd.isna(hour_val):
+def combine_date_hour(date_col, hour_col):
+    if pd.isna(date_col) or pd.isna(hour_col):
         return pd.NaT
-    try:
-        return pd.Timestamp.combine(date_val.date(), hour_val)
-    except:
-        return pd.NaT
+    
+    return pd.to_datetime(
+        f"{date_col} {hour_col}",
+        dayfirst=True,
+        errors="coerce"
+    )
 
-def diff_hours_business(start, end):
+def diff_hours(start, end):
     if pd.isna(start) or pd.isna(end) or end <= start:
         return np.nan
-
-    total_seconds = (end - start).total_seconds()
-    return round(total_seconds / 3600, 2)
+    
+    return round((end - start).total_seconds() / 3600, 2)
     # if pd.isna(start) or pd.isna(end) or end <= start:
     #     return np.nan
 
@@ -95,32 +96,53 @@ df_raw["Closed_hours_clean"] = (
 ).dt.time
 
 # COMBINE DATE + HOUR
+# df_raw["Created_ts"] = df_raw.apply(
+#     lambda r: combine_date_hour(
+#         r["Created_at"], r["Created_hours_clean"]
+#     ),
+#     axis=1
+# )
+
+# df_raw["Closed_ts"] = df_raw.apply(
+#     lambda r: combine_date_hour(
+#         r["Closed_at"], r["Closed_hours_clean"]
+#     ),
+#     axis=1
+# )
+
+# # WEEKDAY
+# df_raw["Created_weekday"] = (
+#     df_raw["Created_at"]
+#     .dt.day_name()
+#     .str.lower()
+# )
+
+# # SOLVED HOURS
+# df_raw["Solved_hours"] = df_raw.apply(
+#     lambda r: diff_hours_business(
+#         r["Created_ts"], r["Closed_ts"]
+#     ),
+#     axis=1
+# )
+
+# Combine datetime
 df_raw["Created_ts"] = df_raw.apply(
-    lambda r: combine_date_hour(
-        r["Created_at"], r["Created_hours_clean"]
-    ),
+    lambda r: combine_date_hour(r["Created_at"], r["Created_hours_clean"]),
     axis=1
 )
 
 df_raw["Closed_ts"] = df_raw.apply(
-    lambda r: combine_date_hour(
-        r["Closed_at"], r["Closed_hours_clean"]
-    ),
+    lambda r: combine_date_hour(r["Closed_at"], r["Closed_hours_clean"]),
     axis=1
 )
 
-# WEEKDAY
-df_raw["Created_weekday"] = (
-    df_raw["Created_at"]
-    .dt.day_name()
-    .str.lower()
-)
+# Remove timezone (kalau ada)
+df_raw["Created_ts"] = df_raw["Created_ts"].dt.tz_localize(None)
+df_raw["Closed_ts"] = df_raw["Closed_ts"].dt.tz_localize(None)
 
-# SOLVED HOURS
+# Hitung selisih jam
 df_raw["Solved_hours"] = df_raw.apply(
-    lambda r: diff_hours_business(
-        r["Created_ts"], r["Closed_ts"]
-    ),
+    lambda r: diff_hours(r["Created_ts"], r["Closed_ts"]),
     axis=1
 )
 
