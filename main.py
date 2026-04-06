@@ -45,19 +45,25 @@ def combine_date_hour(date_val, hour_val):
         return pd.NaT
 
 def diff_hours_business(start, end):
+    def diff_hours_business(start, end):
     if pd.isna(start) or pd.isna(end) or end <= start:
         return np.nan
 
-    total_seconds = 0
-    current = start
-
-    while current < end:
-        next_point = min(current + pd.Timedelta(minutes=1), end)
-        if current.weekday() < 5 and time(8, 0) <= current.time() < time(22, 0):
-            total_seconds += (next_point - current).total_seconds()
-        current = next_point
-
+    total_seconds = (end - start).total_seconds()
     return round(total_seconds / 3600, 2)
+    # if pd.isna(start) or pd.isna(end) or end <= start:
+    #     return np.nan
+
+    # total_seconds = 0
+    # current = start
+
+    # while current < end:
+    #     next_point = min(current + pd.Timedelta(minutes=1), end)
+    #     if current.weekday() < 5 and time(8, 0) <= current.time() < time(22, 0):
+    #         total_seconds += (next_point - current).total_seconds()
+    #     current = next_point
+
+    # return round(total_seconds / 3600, 2)
 
 # ===================== READ DATA =====================
 df_raw = read_sheet(SOURCE_SHEET)     # RAW
