@@ -45,7 +45,6 @@ def combine_date_hour(date_val, hour_val):
         return pd.NaT
 
 def diff_hours_business(start, end):
-    def diff_hours_business(start, end):
     if pd.isna(start) or pd.isna(end) or end <= start:
         return np.nan
 
