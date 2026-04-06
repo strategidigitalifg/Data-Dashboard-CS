@@ -47,9 +47,12 @@ def combine_date_hour(date_col, hour_col):
     )
 
 def diff_hours(start, end):
-    if pd.isna(start) or pd.isna(end) or end <= start:
+    if pd.isna(start) or pd.isna(end):
         return np.nan
-    
+    if end < start:
+        return np.nan
+    if end == start:
+        return 1
     return round((end - start).total_seconds() / 3600, 2)
     # if pd.isna(start) or pd.isna(end) or end <= start:
     #     return np.nan
