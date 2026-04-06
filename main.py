@@ -109,6 +109,16 @@ def diff_hours_business(start, end):
         return 1
     return round(hours, 2)
 
+def classify_business_hour(dt):
+    if pd.isna(dt):
+        return np.nan
+    is_weekday = dt.weekday() < 5
+    is_worktime = time(9, 0) <= dt.time() < time(21, 0)
+    if is_weekday and is_worktime:
+        return "business hour"
+    else:
+        return "non business hour"
+
 # ===================== READ DATA =====================
 df_raw = read_sheet(SOURCE_SHEET)     # RAW
 df_old = read_sheet(OLD_DATA_SHEET)   # SUDAH JADI
@@ -158,6 +168,8 @@ df_raw["Solved_hours_business_hours"] = df_raw.apply(
 )
 df_raw["Created_weekday"] = df_raw["Created_ts"].dt.day_name()
 
+df_raw["Created_hour_type"] = df_raw["Created_ts"].apply(classify_business_hour)
+
 # FORMAT DATE
 df_raw["Created_at"] = df_raw["Created_at"].dt.strftime("%d/%m/%Y").fillna("")
 df_raw["Closed_at"] = df_raw["Closed_at"].dt.strftime("%d/%m/%Y").fillna("")
@@ -170,13 +182,14 @@ final_columns = [
     "Nama Badan Usaha","PIC","Pengaduan","Type",
     "Category","Sub Category","Product","Eskalasi",
     "Status","Solusi","Closed_at","Closed_hours",
-    "Keterangan","Created_weekday","Solved_hours", "Solved_hours_business_hours"
+    "Keterangan","Created_weekday", "Created_hour_type" ,"Solved_hours", "Solved_hours_business_hours"
 ]
 
 df_raw = df_raw.reindex(columns=final_columns)
 
 # ===================== MERGE AFTER PROCESS =====================
 df_old["Solved_hours_business_hours"] = np.nan
+df_old["Created_hour_type"] = np.nan
 
 df_dashboard = pd.concat(
     [df_old, df_raw],
