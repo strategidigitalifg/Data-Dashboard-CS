@@ -80,20 +80,16 @@ df_raw["Closed_at"] = pd.to_datetime(
 
 # CLEAN & ROUND HOURS
 df_raw["Created_hours_clean"] = (
-    df_raw["Created_hours"]
-    .astype(str)
-    .str.replace(r"[^0-9:]", ":", regex=True)
-    .pipe(pd.to_datetime, errors="coerce")
-    .dt.floor("H")
+    pd.to_datetime(df_raw["Created_hours"], errors="coerce")
+    .dt.floor("h")
     .dt.time
 )
 
 df_raw["Closed_hours_clean"] = (
-    pd.to_datetime(
-        df_raw["Created_hours_clean"].astype(str),
-        errors="coerce"
-    ) + pd.Timedelta(hours=1)
-).dt.time
+    pd.to_datetime(df_raw["Closed_hours"], errors="coerce")
+    .dt.floor("h")
+    .dt.time
+)
 
 # COMBINE DATE + HOUR
 # df_raw["Created_ts"] = df_raw.apply(
