@@ -49,7 +49,7 @@ def diff_hours(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
     if end < start:
-        return np.nan
+        return 1
     if end == start:
         return 1
     return round((end - start).total_seconds() / 3600, 2)
@@ -80,7 +80,6 @@ def adjust_to_working_time(dt):
 
     return dt
 
-
 def diff_hours_business(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
@@ -88,7 +87,7 @@ def diff_hours_business(start, end):
     start = adjust_to_working_time(start)
     end = adjust_to_working_time(end)
     if end < start:
-        return np.nan
+        return 1
     total_seconds = 0
     current = start
     while current < end:
@@ -149,9 +148,15 @@ df_raw["Closed_ts"] = df_raw["Closed_ts"].dt.tz_localize(None)
 
 # Hitung selisih jam
 df_raw["Solved_hours"] = df_raw.apply(
+    lambda r: diff_hours(r["Created_ts"], r["Closed_ts"]),
+    axis=1
+)
+
+df_raw["Solved_hours_business_hours"] = df_raw.apply(
     lambda r: diff_hours_business(r["Created_ts"], r["Closed_ts"]),
     axis=1
 )
+df_raw["Created_weekday"] = df_raw["Created_ts"].dt.day_name()
 
 # FORMAT DATE
 df_raw["Created_at"] = df_raw["Created_at"].dt.strftime("%d/%m/%Y").fillna("")
@@ -165,12 +170,14 @@ final_columns = [
     "Nama Badan Usaha","PIC","Pengaduan","Type",
     "Category","Sub Category","Product","Eskalasi",
     "Status","Solusi","Closed_at","Closed_hours",
-    "Keterangan","Created_weekday","Solved_hours"
+    "Keterangan","Created_weekday","Solved_hours", '"Solved_hours_business_hours"
 ]
 
 df_raw = df_raw.reindex(columns=final_columns)
 
 # ===================== MERGE AFTER PROCESS =====================
+df_old["Solved_hours_business_hours"] = np.nan
+
 df_dashboard = pd.concat(
     [df_old, df_raw],
     ignore_index=True
