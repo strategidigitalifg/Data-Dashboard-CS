@@ -170,7 +170,7 @@ final_columns = [
     "Nama Badan Usaha","PIC","Pengaduan","Type",
     "Category","Sub Category","Product","Eskalasi",
     "Status","Solusi","Closed_at","Closed_hours",
-    "Keterangan","Created_weekday","Solved_hours", '"Solved_hours_business_hours"
+    "Keterangan","Created_weekday","Solved_hours", "Solved_hours_business_hours"
 ]
 
 df_raw = df_raw.reindex(columns=final_columns)
