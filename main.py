@@ -156,6 +156,7 @@ df_raw["Solved_hours"] = df_raw.apply(
     lambda r: diff_hours(r["Created_ts"], r["Closed_ts"]),
     axis=1
 )
+df_raw["Solved_hours"] = df_raw["Solved_hours"].astype(float)
 
 df_raw["Solved_hours_business_hours"] = df_raw.apply(
     lambda r: diff_hours_business(r["Created_ts"], r["Closed_ts"]),
@@ -168,8 +169,6 @@ df_raw["Created_hour_type"] = df_raw["Created_ts"].apply(classify_business_hour)
 # FORMAT DATE
 df_raw["Created_at"] = df_raw["Created_at"].dt.strftime("%d/%m/%Y").fillna("")
 df_raw["Closed_at"] = df_raw["Closed_at"].dt.strftime("%d/%m/%Y").fillna("")
-
-df_raw["Solved_hours"] = df_raw["Solved_hours"].round(2)
 
 # FINAL COLUMNS
 final_columns = [
@@ -187,6 +186,7 @@ df_raw = df_raw.reindex(columns=final_columns)
 # ===================== MERGE AFTER PROCESS =====================
 df_old["Solved_hours_business_hours"] = np.nan
 df_old["Created_hour_type"] = np.nan
+df_old["Solved_hours"] = df_old["Solved_hours"].astype(float)
 
 df_dashboard = pd.concat(
     [df_old, df_raw],
