@@ -156,6 +156,9 @@ df_raw["Closed_ts"] = pd.to_datetime(
 df_raw["Created_ts"] = df_raw["Created_ts"].dt.tz_localize(None)
 df_raw["Closed_ts"] = df_raw["Closed_ts"].dt.tz_localize(None)
 
+df_raw["Created_ts"] = pd.to_datetime(df_raw["Created_ts"])
+df_raw["Closed_ts"] = pd.to_datetime(df_raw["Closed_ts"])
+
 # Hitung selisih jam
 df_raw["Solved_hours"] = df_raw.apply(
     lambda r: diff_hours(r["Created_ts"], r["Closed_ts"]),
@@ -173,6 +176,7 @@ df_raw["Created_hour_type"] = df_raw["Created_ts"].apply(classify_business_hour)
 # FORMAT DATE
 df_raw["Created_at"] = df_raw["Created_at"].dt.strftime("%d/%m/%Y").fillna("")
 df_raw["Closed_at"] = df_raw["Closed_at"].dt.strftime("%d/%m/%Y").fillna("")
+
 
 # FINAL COLUMNS
 final_columns = [
