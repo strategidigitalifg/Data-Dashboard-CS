@@ -52,7 +52,9 @@ def diff_hours(start, end):
         return 1
     if end == start:
         return 1
-    return round((end - start).total_seconds() / 3600, 2)
+    
+    diff_minutes = (end - start).total_seconds() / 60
+    return round(diff_minutes / 60, 2)
     
 from datetime import time, timedelta
 import pandas as pd
