@@ -216,7 +216,7 @@ df_dashboard["Closed_at"] = pd.to_datetime(
     errors="coerce"
 ).dt.strftime("%d/%m/%Y")
 
-
+df_raw["Solved_hours"] = df_raw["Solved_hours"].round(2)
 
 # ===================== WRITE TO GSHEET =====================
 try:
