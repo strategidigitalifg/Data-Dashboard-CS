@@ -49,9 +49,7 @@ def diff_hours(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
     diff_minutes = (end - start).total_seconds() / 60
-    if diff_minutes <= 0:
-        return 0  # atau np.nan
-    return round(diff_minutes / 60, 2)
+    return diff_minutes / 60  # tanpa round dulu
 
 
 from datetime import time, timedelta
