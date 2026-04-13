@@ -3,7 +3,7 @@ from google.oauth2.service_account import Credentials
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
 import pandas as pd
 import numpy as np
-from datetime import time
+from datetime import time, timedelta
 
 # ===================== CONFIG =====================
 SPREADSHEET_ID = "1nBu4i90879LP-ieaG9SoPPFngAHK6mlItUs1iJpI3as"
@@ -48,13 +48,7 @@ def combine_date_hour(date_col, hour_col):
 def diff_hours(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
-    diff_minutes = (end - start).total_seconds() / 60
-    return diff_minutes / 60  # tanpa round dulu
-
-
-from datetime import time, timedelta
-import pandas as pd
-import numpy as np
+    return (end - start).total_seconds() / 3600
 
 WORK_START = time(9, 0)
 WORK_END = time(21, 0)
