@@ -179,13 +179,14 @@ final_columns = [
     "Category","Sub Category","Product","Eskalasi",
     "Status","Solusi","Closed_at","Closed_hours",
     "Keterangan","Created_weekday", "Created_hour_type" ,"Solved_hours", "Solved_hours_business_hours"
+    ,"Created_ts", "Closed_ts"
 ]
-
 df_raw = df_raw.reindex(columns=final_columns)
-
 # ===================== MERGE AFTER PROCESS =====================
 df_old["Solved_hours_business_hours"] = np.nan
 df_old["Created_hour_type"] = np.nan
+df_old["Created_ts"] = np.nan
+df_old["Closed_ts"] = np.nan
 df_old["Solved_hours"] = df_old["Solved_hours"].astype(float)
 
 df_dashboard = pd.concat(
