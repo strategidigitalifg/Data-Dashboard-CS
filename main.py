@@ -175,6 +175,7 @@ df_raw["Created_hour_type"] = df_raw["Created_ts"].apply(classify_business_hour)
 df_raw["Created_at"] = df_raw["Created_at"].dt.strftime("%d/%m/%Y").fillna("")
 df_raw["Closed_at"] = df_raw["Closed_at"].dt.strftime("%d/%m/%Y").fillna("")
 
+df_raw["Solved_hours"] = df_raw["Solved_hours"].round(2)
 
 # FINAL COLUMNS
 final_columns = [
@@ -215,8 +216,6 @@ df_dashboard["Closed_at"] = pd.to_datetime(
     dayfirst=True,
     errors="coerce"
 ).dt.strftime("%d/%m/%Y")
-
-df_raw["Solved_hours"] = df_raw["Solved_hours"].round(2)
 
 # ===================== WRITE TO GSHEET =====================
 try:
