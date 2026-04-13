@@ -101,20 +101,6 @@ WORK_END = time(21, 0)
 #         return 1
 #     return round(hours, 2)
 
-# def classify_business_hour(dt):
-#     if pd.isna(dt):
-#         return np.nan
-#     is_weekday = dt.weekday() < 5
-#     is_worktime = time(9, 0) <= dt.time() < time(21, 0)
-#     if is_weekday and is_worktime:
-#         return "business hour"
-#     else:
-#         return "non business hour"
-
-from datetime import time, timedelta
-import pandas as pd
-import numpy as np
-
 WORK_START = time(9, 0)
 WORK_END = time(21, 0)
 
@@ -165,7 +151,15 @@ def diff_hours_business(start, end):
 
     return round(total_seconds / 3600, 2)
 
-
+def classify_business_hour(dt):
+    if pd.isna(dt):
+        return np.nan
+    is_weekday = dt.weekday() < 5
+    is_worktime = time(9, 0) <= dt.time() < time(21, 0)
+    if is_weekday and is_worktime:
+        return "business hour"
+    else:
+        return "non business hour"
 # ===================== READ DATA =====================
 df_raw = read_sheet(SOURCE_SHEET)     # RAW
 df_old = read_sheet(OLD_DATA_SHEET)   # SUDAH JADI
@@ -224,14 +218,11 @@ final_columns = [
     "Category","Sub Category","Product","Eskalasi",
     "Status","Solusi","Closed_at","Closed_hours",
     "Keterangan","Created_weekday", "Created_hour_type" ,"Solved_hours", "Solved_hours_business_hours"
-    ,"Created_ts", "Closed_ts"
 ]
 df_raw = df_raw.reindex(columns=final_columns)
 # ===================== MERGE AFTER PROCESS =====================
 df_old["Solved_hours_business_hours"] = np.nan
 df_old["Created_hour_type"] = np.nan
-df_old["Created_ts"] = np.nan
-df_old["Closed_ts"] = np.nan
 df_old["Solved_hours"] = df_old["Solved_hours"].astype(float)
 
 df_dashboard = pd.concat(
