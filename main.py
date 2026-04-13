@@ -48,14 +48,12 @@ def combine_date_hour(date_col, hour_col):
 def diff_hours(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
-    if end < start:
-        return 1
-    if end == start:
-        return 1
-    
     diff_minutes = (end - start).total_seconds() / 60
+    if diff_minutes <= 0:
+        return 0  # atau np.nan
     return round(diff_minutes / 60, 2)
-    
+
+
 from datetime import time, timedelta
 import pandas as pd
 import numpy as np
