@@ -125,25 +125,15 @@ df_raw["Closed_at"] = pd.to_datetime(
 )
 
 # CLEAN & ROUND HOURS
-df_raw["Created_hours_clean"] = (
-    pd.to_datetime(df_raw["Created_hours"], errors="coerce")
-    .dt.floor("h")
-    .dt.time
-)
-
-df_raw["Closed_hours_clean"] = (
-    pd.to_datetime(df_raw["Closed_hours"], errors="coerce")
-    .dt.floor("h")
-    .dt.time
-)
-
 df_raw["Created_ts"] = pd.to_datetime(
-    df_raw["Created_at"].astype(str) + " " + df_raw["Created_hours_clean"].astype(str),
-    errors="coerce")
+    df_raw["Created_at"].astype(str) + " " + df_raw["Created_hours"].astype(str),
+    errors="coerce"
+)
 
 df_raw["Closed_ts"] = pd.to_datetime(
-    df_raw["Closed_at"].astype(str) + " " + df_raw["Closed_hours_clean"].astype(str),
-    errors="coerce")
+    df_raw["Closed_at"].astype(str) + " " + df_raw["Closed_hours"].astype(str),
+    errors="coerce"
+)
 # Remove timezone (kalau ada)
 df_raw["Created_ts"] = df_raw["Created_ts"].dt.tz_localize(None)
 df_raw["Closed_ts"] = df_raw["Closed_ts"].dt.tz_localize(None)
