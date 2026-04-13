@@ -53,63 +53,118 @@ def diff_hours(start, end):
 WORK_START = time(9, 0)
 WORK_END = time(21, 0)
 
-def adjust_to_working_time(dt):
-    if pd.isna(dt):
-        return pd.NaT
+# def adjust_to_working_time(dt):
+#     if pd.isna(dt):
+#         return pd.NaT
 
-    # Kalau weekend → lompat ke Senin jam 09:00
-    while dt.weekday() >= 5:  # 5=Sabtu, 6=Minggu
-        dt = (dt + timedelta(days=1)).replace(hour=9, minute=0, second=0)
+#     # Kalau weekend → lompat ke Senin jam 09:00
+#     while dt.weekday() >= 5:  # 5=Sabtu, 6=Minggu
+#         dt = (dt + timedelta(days=1)).replace(hour=9, minute=0, second=0)
 
-    # Kalau sebelum jam kerja → set ke 09:00
-    if dt.time() < WORK_START:
-        dt = dt.replace(hour=9, minute=0, second=0)
+#     # Kalau sebelum jam kerja → set ke 09:00
+#     if dt.time() < WORK_START:
+#         dt = dt.replace(hour=9, minute=0, second=0)
 
-    # Kalau setelah jam kerja → ke besok 09:00
-    elif dt.time() >= WORK_END:
-        dt = (dt + timedelta(days=1)).replace(hour=9, minute=0, second=0)
-        return adjust_to_working_time(dt)  # recheck weekend
+#     # Kalau setelah jam kerja → ke besok 09:00
+#     elif dt.time() >= WORK_END:
+#         dt = (dt + timedelta(days=1)).replace(hour=9, minute=0, second=0)
+#         return adjust_to_working_time(dt)  # recheck weekend
 
-    return dt
+#     return dt
+
+# def diff_hours_business(start, end):
+#     if pd.isna(start) or pd.isna(end):
+#         return np.nan
+#     # Adjust start & end
+#     start = adjust_to_working_time(start)
+#     end = adjust_to_working_time(end)
+#     if end < start:
+#         return 1
+#     total_seconds = 0
+#     current = start
+#     while current < end:
+#         # End of current working day
+#         end_of_day = current.replace(hour=21, minute=0, second=0)
+#         if end <= end_of_day:
+#             total_seconds += (end - current).total_seconds()
+#             break
+#         else:
+#             total_seconds += (end_of_day - current).total_seconds()
+#             # Move ke next working day jam 09:00
+#             next_day = current + timedelta(days=1)
+#             current = adjust_to_working_time(
+#                 next_day.replace(hour=9, minute=0, second=0)
+#             )
+#     hours = total_seconds / 3600
+#     # minimal 1 jam kalau start == end setelah adjust
+#     if hours == 0:
+#         return 1
+#     return round(hours, 2)
+
+# def classify_business_hour(dt):
+#     if pd.isna(dt):
+#         return np.nan
+#     is_weekday = dt.weekday() < 5
+#     is_worktime = time(9, 0) <= dt.time() < time(21, 0)
+#     if is_weekday and is_worktime:
+#         return "business hour"
+#     else:
+#         return "non business hour"
+
+from datetime import time, timedelta
+import pandas as pd
+import numpy as np
+
+WORK_START = time(9, 0)
+WORK_END = time(21, 0)
+
+def is_outside_working_hours(dt):
+    return (
+        dt.weekday() >= 5 or
+        dt.time() < WORK_START or
+        dt.time() >= WORK_END
+    )
+
+def diff_hours(start, end):
+    if pd.isna(start) or pd.isna(end):
+        return np.nan
+    return (end - start).total_seconds() / 3600
+
 
 def diff_hours_business(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
-    # Adjust start & end
-    start = adjust_to_working_time(start)
-    end = adjust_to_working_time(end)
-    if end < start:
-        return 1
+    
+    if end <= start:
+        return 0
+
+    # 🔥 RULE BARU
+    if is_outside_working_hours(start) and is_outside_working_hours(end):
+        return round(diff_hours(start, end), 2)
+
     total_seconds = 0
     current = start
-    while current < end:
-        # End of current working day
-        end_of_day = current.replace(hour=21, minute=0, second=0)
-        if end <= end_of_day:
-            total_seconds += (end - current).total_seconds()
-            break
-        else:
-            total_seconds += (end_of_day - current).total_seconds()
-            # Move ke next working day jam 09:00
-            next_day = current + timedelta(days=1)
-            current = adjust_to_working_time(
-                next_day.replace(hour=9, minute=0, second=0)
-            )
-    hours = total_seconds / 3600
-    # minimal 1 jam kalau start == end setelah adjust
-    if hours == 0:
-        return 1
-    return round(hours, 2)
 
-def classify_business_hour(dt):
-    if pd.isna(dt):
-        return np.nan
-    is_weekday = dt.weekday() < 5
-    is_worktime = time(9, 0) <= dt.time() < time(21, 0)
-    if is_weekday and is_worktime:
-        return "business hour"
-    else:
-        return "non business hour"
+    while current < end:
+        # Skip weekend
+        if current.weekday() >= 5:
+            current = (current + timedelta(days=1)).replace(hour=9, minute=0, second=0)
+            continue
+
+        work_start_dt = current.replace(hour=9, minute=0, second=0)
+        work_end_dt = current.replace(hour=21, minute=0, second=0)
+
+        effective_start = max(current, work_start_dt)
+        effective_end = min(end, work_end_dt)
+
+        if effective_start < effective_end:
+            total_seconds += (effective_end - effective_start).total_seconds()
+
+        # next day
+        current = (current + timedelta(days=1)).replace(hour=9, minute=0, second=0)
+
+    return round(total_seconds / 3600, 2)
+
 
 # ===================== READ DATA =====================
 df_raw = read_sheet(SOURCE_SHEET)     # RAW
