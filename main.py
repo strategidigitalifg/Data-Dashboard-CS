@@ -50,9 +50,6 @@ def diff_hours(start, end):
         return np.nan
     return (end - start).total_seconds() / 3600
 
-WORK_START = time(9, 0)
-WORK_END = time(21, 0)
-
 # def adjust_to_working_time(dt):
 #     if pd.isna(dt):
 #         return pd.NaT
@@ -116,7 +113,7 @@ def diff_hours(start, end):
         return np.nan
     return (end - start).total_seconds() / 3600
 
-
+# 🔥 RULE BARU
 def diff_hours_business(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
@@ -124,21 +121,27 @@ def diff_hours_business(start, end):
     if end <= start:
         return 0
 
-    # 🔥 RULE BARU
-    if is_outside_working_hours(start) and is_outside_working_hours(end):
-        return round(diff_hours(start, end), 2)
-
     total_seconds = 0
     current = start
 
     while current < end:
-        # Skip weekend
-        if current.weekday() >= 5:
-            current = (current + timedelta(days=1)).replace(hour=9, minute=0, second=0)
+        # 🔥 RULE BERDASARKAN TANGGAL
+        if current.date() >= pd.to_datetime("2026-04-13").date():
+            work_start_hour = 8
+            work_end_hour = 22
+            is_workday = True
+        else:
+            work_start_hour = 9
+            work_end_hour = 21
+            is_workday = current.weekday() < 5
+
+        # skip weekend hanya sebelum 13 April
+        if not is_workday:
+            current = (current + timedelta(days=1)).replace(hour=work_start_hour, minute=0, second=0)
             continue
 
-        work_start_dt = current.replace(hour=9, minute=0, second=0)
-        work_end_dt = current.replace(hour=21, minute=0, second=0)
+        work_start_dt = current.replace(hour=work_start_hour, minute=0, second=0)
+        work_end_dt = current.replace(hour=work_end_hour, minute=0, second=0)
 
         effective_start = max(current, work_start_dt)
         effective_end = min(end, work_end_dt)
@@ -147,16 +150,27 @@ def diff_hours_business(start, end):
             total_seconds += (effective_end - effective_start).total_seconds()
 
         # next day
-        current = (current + timedelta(days=1)).replace(hour=9, minute=0, second=0)
+        current = (current + timedelta(days=1)).replace(hour=work_start_hour, minute=0, second=0)
 
     return round(total_seconds / 3600, 2)
-
 def classify_business_hour(dt):
     if pd.isna(dt):
         return np.nan
-    is_weekday = dt.weekday() < 5
-    is_worktime = time(9, 0) <= dt.time() < time(21, 0)
-    if is_weekday and is_worktime:
+
+    if dt.date() >= pd.to_datetime("2026-04-13").date():
+        # setelah 13 April (weekend masuk)
+        work_start = time(8, 0)
+        work_end = time(22, 0)
+        is_workday = True
+    else:
+        # sebelum 13 April (weekend tidak masuk)
+        work_start = time(9, 0)
+        work_end = time(21, 0)
+        is_workday = dt.weekday() < 5
+
+    is_worktime = work_start <= dt.time() < work_end
+
+    if is_workday and is_worktime:
         return "business hour"
     else:
         return "non business hour"
