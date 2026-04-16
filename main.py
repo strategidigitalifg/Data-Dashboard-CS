@@ -159,7 +159,7 @@ def classify_business_hour(dt):
 
     if dt.date() >= pd.to_datetime("2026-04-13").date():
         # setelah 13 April (weekend masuk)
-        work_start = time(8, 0)
+        work_start = time(9, 0)
         work_end = time(22, 0)
         is_workday = True
     else:
