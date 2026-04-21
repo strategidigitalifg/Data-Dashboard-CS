@@ -2,7 +2,7 @@ name: CS Dashboard Automation
 
 on:
   schedule:
-    - cron: "0 1 * * *"    # 08:00 WIB
+    - cron: "0 00 * * *"    # 08:00 WIB
     - cron: "0 08 * * *"   # 17:00 WIB
   workflow_dispatch:
 
