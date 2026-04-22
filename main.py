@@ -10,6 +10,7 @@ SPREADSHEET_ID = "1nBu4i90879LP-ieaG9SoPPFngAHK6mlItUs1iJpI3as"
 
 SOURCE_SHEET = "Data Source CS"
 OLD_DATA_SHEET = "Old Data"
+WA_COSTER = "Data WA Coster"
 TARGET_SHEET = "Data Dashboard"
 
 SERVICE_ACCOUNT_FILE = "service_account.json"
@@ -192,7 +193,6 @@ df_raw["Created_ts"] = pd.to_datetime(
     df_raw["Created_at"].astype(str) + " " + df_raw["Created_hours"].astype(str),
     errors="coerce"
 )
-
 df_raw["Closed_ts"] = pd.to_datetime(
     df_raw["Closed_at"].astype(str) + " " + df_raw["Closed_hours"].astype(str),
     errors="coerce"
@@ -204,6 +204,50 @@ df_raw["Closed_ts"] = df_raw["Closed_ts"].dt.tz_localize(None)
 df_raw["Created_ts"] = pd.to_datetime(df_raw["Created_ts"])
 df_raw["Closed_ts"] = pd.to_datetime(df_raw["Closed_ts"])
 
+# Coster
+cols = [
+    "Ticket Number",
+    "Created At",
+    "Assigned At",
+    "First Response At",
+    "Closed At"
+]
+df_coster = read_sheet(WA_COSTER)
+df_coster = df_coster[cols].rename(columns={
+    "Created At": "Created At Coster",
+    "Closed At": "Closed At Coster"
+})
+df_coster["Created At Coster"] = pd.to_datetime(
+    df_coster["Created At Coster"], dayfirst=True, errors="coerce"
+)
+df_coster["Assigned At"] = pd.to_datetime(
+    df_coster["Assigned At"], dayfirst=True, errors="coerce"
+)
+df_coster["First Response At"] = pd.to_datetime(
+    df_coster["First Response At"], dayfirst=True, errors="coerce"
+)
+df_coster["Closed At Coster"] = pd.to_datetime(
+    df_coster["Closed At Coster"], dayfirst=True, errors="coerce"
+)
+df_raw = df_raw.merge(
+    df_coster,
+    left_on="Nomor Ticket Coster",
+    right_on="Ticket Number",
+    how="left"   # bisa diganti "inner" kalau mau hanya yang match saja
+)
+# ganti Created_at untuk whatsapp-cloud
+df_raw["Created_ts"] = np.where(
+    df_raw["Channel"] == "Whatsapp-cloud",
+    df_raw["Created At Coster"],
+    df_raw["Created_ts"]
+)
+df_raw["Closed_ts"] = np.where(
+    df_raw["Channel"] == "Whatsapp-cloud",
+    df_raw["Closed At Coster"],
+    df_raw["Closed_ts"]
+)
+
+
 # Hitung selisih jam
 df_raw["Solved_hours"] = df_raw.apply(
     lambda r: diff_hours(r["Created_ts"], r["Closed_ts"]),
@@ -211,10 +255,18 @@ df_raw["Solved_hours"] = df_raw.apply(
 )
 df_raw["Solved_hours"] = df_raw["Solved_hours"].astype(float)
 
+# Hitung First_time_response 
+df_raw["First_time_response"] = df_raw.apply(
+    lambda r: diff_hours(r["Created_ts"], r["First Response At"]),
+    axis=1
+)
+df_raw["First_time_response"] = df_raw["First_time_response"].astype(float)
+
 df_raw["Solved_hours_business_hours"] = df_raw.apply(
     lambda r: diff_hours_business(r["Created_ts"], r["Closed_ts"]),
     axis=1
 )
+
 df_raw["Created_weekday"] = df_raw["Created_ts"].dt.day_name()
 
 df_raw["Created_hour_type"] = df_raw["Created_ts"].apply(classify_business_hour)
@@ -231,12 +283,13 @@ final_columns = [
     "Nama Badan Usaha","PIC","Pengaduan","Type",
     "Category","Sub Category","Product","Eskalasi",
     "Status","Solusi","Closed_at","Closed_hours",
-    "Keterangan","Created_weekday", "Created_hour_type" ,"Solved_hours", "Solved_hours_business_hours"
+    "Keterangan","Created_weekday", "Created_hour_type" ,"Solved_hours", "Solved_hours_business_hours", "First_time_response"
 ]
 df_raw = df_raw.reindex(columns=final_columns)
 # ===================== MERGE AFTER PROCESS =====================
 df_old["Solved_hours_business_hours"] = np.nan
 df_old["Created_hour_type"] = np.nan
+df_old["First_time_response"] = np.nan
 df_old["Solved_hours"] = df_old["Solved_hours"].astype(float)
 
 df_dashboard = pd.concat(
