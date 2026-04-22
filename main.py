@@ -258,8 +258,13 @@ df_raw["Solved_hours"] = df_raw.apply(
 df_raw["Solved_hours"] = df_raw["Solved_hours"].astype(float)
 
 # Hitung First_time_response 
+def diff_first_time(start, end):
+    if pd.isna(start) or pd.isna(end):
+        return np.nan
+    return (end - start).total_seconds() / 60
+    
 df_raw["First_time_response"] = df_raw.apply(
-    lambda r: diff_hours(r["Created_ts"], r["First Response At"]),
+    lambda r: diff_first_time(r["Created_ts"], r["First Response At"]),
     axis=1
 )
 df_raw["First_time_response"] = df_raw["First_time_response"].astype(float)
