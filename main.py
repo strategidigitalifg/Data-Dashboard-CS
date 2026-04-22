@@ -112,7 +112,7 @@ def is_outside_working_hours(dt):
 def diff_hours(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
-    return (end - start).total_seconds() / 3600
+    return round((end - start).total_seconds() / 3600, 5)
 
 # 🔥 RULE BARU
 def diff_hours_business(start, end):
@@ -153,7 +153,9 @@ def diff_hours_business(start, end):
         # next day
         current = (current + timedelta(days=1)).replace(hour=work_start_hour, minute=0, second=0)
 
-    return round(total_seconds / 3600, 2)
+    return round(total_seconds / 3600, 5)
+
+
 def classify_business_hour(dt):
     if pd.isna(dt):
         return np.nan
