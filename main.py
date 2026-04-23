@@ -239,12 +239,13 @@ df_raw = df_raw.merge(
 )
 # ganti Created_at untuk whatsapp-cloud
 df_raw["Created_ts"] = np.where(
-    df_raw["Channel"] == "Whatsapp-cloud",
+    (df_raw["Channel"] == "Whatsapp-cloud") & (df_raw["Created At Coster"].notna()),
     df_raw["Created At Coster"],
     df_raw["Created_ts"]
 )
+
 df_raw["Closed_ts"] = np.where(
-    df_raw["Channel"] == "Whatsapp-cloud",
+    (df_raw["Channel"] == "Whatsapp-cloud") & (df_raw["Closed At Coster"].notna()),
     df_raw["Closed At Coster"],
     df_raw["Closed_ts"]
 )
