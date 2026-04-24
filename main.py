@@ -49,7 +49,7 @@ def combine_date_hour(date_col, hour_col):
 def diff_hours(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
-    return (end - start).total_seconds() / 3600
+    return (end - start).total_seconds() / 60
 
 # def adjust_to_working_time(dt):
 #     if pd.isna(dt):
@@ -153,7 +153,7 @@ def diff_hours_business(start, end):
         # next day
         current = (current + timedelta(days=1)).replace(hour=work_start_hour, minute=0, second=0)
 
-    return round(total_seconds / 3600, 5)
+    return round(total_seconds / 60, 5)
 
 
 def classify_business_hour(dt):
