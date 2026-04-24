@@ -287,6 +287,9 @@ df_raw["Created_hour_type"] = df_raw["Created_ts"].apply(classify_business_hour)
 df_raw["Created_at"] = df_raw["Created_at"].dt.strftime("%d/%m/%Y").fillna("")
 df_raw["Closed_at"] = df_raw["Closed_at"].dt.strftime("%d/%m/%Y").fillna("")
 
+df_raw["Solved_hours"] = df_raw["Solved_hours"] / 60
+df_raw["Solved_hours_business_hours"] = df_raw["Solved_hours_business_hours"] / 60
+
 # FINAL COLUMNS
 final_columns = [
     "Channel","Created_at","Created_hours","Nomor Tiket",
