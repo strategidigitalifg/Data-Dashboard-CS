@@ -46,11 +46,6 @@ def combine_date_hour(date_col, hour_col):
         errors="coerce"
     )
     
-def diff_hours(start, end):
-    if pd.isna(start) or pd.isna(end):
-        return np.nan
-    return (end - start).total_seconds() / 60
-
 # def adjust_to_working_time(dt):
 #     if pd.isna(dt):
 #         return pd.NaT
@@ -112,7 +107,7 @@ def is_outside_working_hours(dt):
 def diff_hours(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
-    return round((end - start).total_seconds() / 3600, 5)
+    return round((end - start).total_seconds() / 60, 5)
 
 # 🔥 RULE BARU
 def diff_hours_business(start, end):
