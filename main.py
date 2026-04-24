@@ -250,7 +250,6 @@ df_raw["Closed_ts"] = np.where(
     df_raw["Closed_ts"]
 )
 
-
 # Hitung selisih jam
 df_raw["Solved_hours"] = df_raw.apply(
     lambda r: diff_hours(r["Created_ts"], r["Closed_ts"]),
@@ -275,6 +274,11 @@ df_raw["Solved_hours_business_hours"] = df_raw.apply(
     axis=1
 )
 
+df_raw["First_time_business_hours"] = df_raw.apply(
+    lambda r: diff_hours_business(r["Created_ts"], r["First Response At"]),
+    axis=1
+)
+
 df_raw["Created_weekday"] = df_raw["Created_ts"].dt.day_name()
 
 df_raw["Created_hour_type"] = df_raw["Created_ts"].apply(classify_business_hour)
@@ -291,13 +295,14 @@ final_columns = [
     "Nama Badan Usaha","PIC","Pengaduan","Type",
     "Category","Sub Category","Product","Eskalasi",
     "Status","Solusi","Closed_at","Closed_hours",
-    "Keterangan","Created_weekday", "Created_hour_type" ,"Solved_hours", "Solved_hours_business_hours", "First_time_response"
+    "Keterangan","Created_weekday", "Created_hour_type" ,"Solved_hours", "Solved_hours_business_hours", "First_time_response", "First_time_business_hours"
 ]
 df_raw = df_raw.reindex(columns=final_columns)
 # ===================== MERGE AFTER PROCESS =====================
 df_old["Solved_hours_business_hours"] = np.nan
 df_old["Created_hour_type"] = np.nan
 df_old["First_time_response"] = np.nan
+df_old["First_time_business_hours"] = np.nan
 df_old["Solved_hours"] = df_old["Solved_hours"].astype(float)
 
 df_dashboard = pd.concat(
