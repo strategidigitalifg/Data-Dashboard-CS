@@ -213,15 +213,12 @@ df_coster = df_coster[cols].rename(columns={
 df_coster["Created At Coster"] = pd.to_datetime(
     df_coster["Created At Coster"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
 )
-
 df_coster["Assigned At"] = pd.to_datetime(
     df_coster["Assigned At"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
 )
-
 df_coster["First Response At"] = pd.to_datetime(
     df_coster["First Response At"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
 )
-
 df_coster["Closed At Coster"] = pd.to_datetime(
     df_coster["Closed At Coster"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
 )
@@ -245,6 +242,12 @@ df_raw["Closed_ts"] = np.where(
     df_raw["Closed_ts"]
 )
 
+df_raw["First_Response_ts"] = np.where(
+    (df_raw["Channel"] == "Whatsapp-cloud") & (df_raw["First Response At"].notna()),
+    df_raw["First Response At"],
+    df_raw["First Response At"]  # fallback
+)
+
 # Hitung selisih jam
 df_raw["Solved_hours"] = df_raw.apply(
     lambda r: diff_hours(r["Created_ts"], r["Closed_ts"]),
@@ -253,16 +256,12 @@ df_raw["Solved_hours"] = df_raw.apply(
 df_raw["Solved_hours"] = df_raw["Solved_hours"].astype(float)
 
 # Hitung First_time_response 
-def diff_first_time(start, end):
-    if pd.isna(start) or pd.isna(end):
-        return np.nan
-    return (end - start).total_seconds() / 60
-    
-df_raw["First_time_response"] = df_raw.apply(
-    lambda r: diff_first_time(r["Created_ts"], r["First Response At"]),
-    axis=1
+df_raw["First_time_response"] = (
+    (df_raw["First_Response_ts"] - df_raw["Created_ts"])
+    .dt.total_seconds() / 60
 )
 df_raw["First_time_response"] = df_raw["First_time_response"].astype(float)
+df_raw["First_time_response"] = df_raw["First_time_response"].clip(lower=0)
 
 df_raw["Solved_hours_business_hours"] = df_raw.apply(
     lambda r: diff_hours_business(r["Created_ts"], r["Closed_ts"]),
