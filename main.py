@@ -170,12 +170,11 @@ df_coster = df_coster[cols].rename(columns={
 df_coster["Created At Coster"] = pd.to_datetime(
     df_coster["Created At Coster"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
 )
-df_coster["Assigned At"] = pd.to_datetime(
-    df_coster["Assigned At"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
-)
+
 df_coster["First Response At"] = pd.to_datetime(
-    df_coster["First Response At"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
+    df_coster["First Response At"], dayfirst=True, errors="coerce"
 )
+
 df_coster["Closed At Coster"] = pd.to_datetime(
     df_coster["Closed At Coster"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
 )
