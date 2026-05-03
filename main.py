@@ -45,54 +45,6 @@ def combine_date_hour(date_col, hour_col):
         dayfirst=True,
         errors="coerce"
     )
-    
-# def adjust_to_working_time(dt):
-#     if pd.isna(dt):
-#         return pd.NaT
-
-#     # Kalau weekend → lompat ke Senin jam 09:00
-#     while dt.weekday() >= 5:  # 5=Sabtu, 6=Minggu
-#         dt = (dt + timedelta(days=1)).replace(hour=9, minute=0, second=0)
-
-#     # Kalau sebelum jam kerja → set ke 09:00
-#     if dt.time() < WORK_START:
-#         dt = dt.replace(hour=9, minute=0, second=0)
-
-#     # Kalau setelah jam kerja → ke besok 09:00
-#     elif dt.time() >= WORK_END:
-#         dt = (dt + timedelta(days=1)).replace(hour=9, minute=0, second=0)
-#         return adjust_to_working_time(dt)  # recheck weekend
-
-#     return dt
-
-# def diff_hours_business(start, end):
-#     if pd.isna(start) or pd.isna(end):
-#         return np.nan
-#     # Adjust start & end
-#     start = adjust_to_working_time(start)
-#     end = adjust_to_working_time(end)
-#     if end < start:
-#         return 1
-#     total_seconds = 0
-#     current = start
-#     while current < end:
-#         # End of current working day
-#         end_of_day = current.replace(hour=21, minute=0, second=0)
-#         if end <= end_of_day:
-#             total_seconds += (end - current).total_seconds()
-#             break
-#         else:
-#             total_seconds += (end_of_day - current).total_seconds()
-#             # Move ke next working day jam 09:00
-#             next_day = current + timedelta(days=1)
-#             current = adjust_to_working_time(
-#                 next_day.replace(hour=9, minute=0, second=0)
-#             )
-#     hours = total_seconds / 3600
-#     # minimal 1 jam kalau start == end setelah adjust
-#     if hours == 0:
-#         return 1
-#     return round(hours, 2)
 
 WORK_START = time(9, 0)
 WORK_END = time(21, 0)
@@ -113,7 +65,7 @@ def diff_hours(start, end):
 def diff_hours_business(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
-    
+
     if end <= start:
         return 0
 
@@ -194,6 +146,10 @@ df_raw["Closed_ts"] = pd.to_datetime(
     df_raw["Closed_at"].astype(str) + " " + df_raw["Closed_hours"].astype(str),
     errors="coerce"
 )
+# Remove timezone (kalau ada)
+df_raw["Created_ts"] = df_raw["Created_ts"].dt.tz_localize(None)
+df_raw["Closed_ts"] = df_raw["Closed_ts"].dt.tz_localize(None)
+
 df_raw["Created_ts"] = pd.to_datetime(df_raw["Created_ts"])
 df_raw["Closed_ts"] = pd.to_datetime(df_raw["Closed_ts"])
 
@@ -210,6 +166,7 @@ df_coster = df_coster[cols].rename(columns={
     "Created At": "Created At Coster",
     "Closed At": "Closed At Coster"
 })
+
 df_coster["Created At Coster"] = pd.to_datetime(
     df_coster["Created At Coster"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
 )
@@ -222,9 +179,6 @@ df_coster["First Response At"] = pd.to_datetime(
 df_coster["Closed At Coster"] = pd.to_datetime(
     df_coster["Closed At Coster"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
 )
-
-df_raw["Nomor Ticket Coster"] = df_raw["Nomor Ticket Coster"].astype(str).str.strip()
-df_coster["Ticket Number"] = df_coster["Ticket Number"].astype(str).str.strip()
 
 df_raw = df_raw.merge(
     df_coster,
@@ -245,12 +199,6 @@ df_raw["Closed_ts"] = np.where(
     df_raw["Closed_ts"]
 )
 
-df_raw["First_Response_ts"] = np.where(
-    (df_raw["Channel"] == "Whatsapp-cloud") & (df_raw["First Response At"].notna()),
-    df_raw["First Response At"],
-    df_raw["First Response At"]  # fallback
-)
-
 # Hitung selisih jam
 df_raw["Solved_hours"] = df_raw.apply(
     lambda r: diff_hours(r["Created_ts"], r["Closed_ts"]),
@@ -259,12 +207,16 @@ df_raw["Solved_hours"] = df_raw.apply(
 df_raw["Solved_hours"] = df_raw["Solved_hours"].astype(float)
 
 # Hitung First_time_response 
-df_raw["First_time_response"] = (
-    (df_raw["First_Response_ts"] - df_raw["Created_ts"])
-    .dt.total_seconds() / 60
+def diff_first_time(start, end):
+    if pd.isna(start) or pd.isna(end):
+        return np.nan
+    return (end - start).total_seconds() / 60
+
+df_raw["First_time_response"] = df_raw.apply(
+    lambda r: diff_first_time(r["Created_ts"], r["First Response At"]),
+    axis=1
 )
 df_raw["First_time_response"] = df_raw["First_time_response"].astype(float)
-df_raw["First_time_response"] = df_raw["First_time_response"].clip(lower=0)
 
 df_raw["Solved_hours_business_hours"] = df_raw.apply(
     lambda r: diff_hours_business(r["Created_ts"], r["Closed_ts"]),
