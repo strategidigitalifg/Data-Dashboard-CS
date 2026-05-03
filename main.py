@@ -194,10 +194,6 @@ df_raw["Closed_ts"] = pd.to_datetime(
     df_raw["Closed_at"].astype(str) + " " + df_raw["Closed_hours"].astype(str),
     errors="coerce"
 )
-# Remove timezone (kalau ada)
-df_raw["Created_ts"] = df_raw["Created_ts"].dt.tz_localize(None)
-df_raw["Closed_ts"] = df_raw["Closed_ts"].dt.tz_localize(None)
-
 df_raw["Created_ts"] = pd.to_datetime(df_raw["Created_ts"])
 df_raw["Closed_ts"] = pd.to_datetime(df_raw["Closed_ts"])
 
