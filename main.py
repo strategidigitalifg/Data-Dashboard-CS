@@ -223,6 +223,9 @@ df_coster["Closed At Coster"] = pd.to_datetime(
     df_coster["Closed At Coster"], format="%d/%m/%Y %H:%M:%S", errors="coerce"
 )
 
+df_raw["Nomor Ticket Coster"] = df_raw["Nomor Ticket Coster"].astype(str).str.strip()
+df_coster["Ticket Number"] = df_coster["Ticket Number"].astype(str).str.strip()
+
 df_raw = df_raw.merge(
     df_coster,
     left_on="Nomor Ticket Coster",
