@@ -59,7 +59,8 @@ def is_outside_working_hours(dt):
 def diff_hours(start, end):
     if pd.isna(start) or pd.isna(end):
         return np.nan
-    return round((end - start).total_seconds() / 60, 5)
+    diff = (end - start).total_seconds() / 60
+    return round(max(diff, 0), 5)
 
 # 🔥 RULE BARU
 def diff_hours_business(start, end):
@@ -210,8 +211,9 @@ df_raw["Solved_hours"] = df_raw["Solved_hours"].astype(float)
 # Hitung First_time_response 
 def diff_first_time(start, end):
     if pd.isna(start) or pd.isna(end):
-        return np.nan
-    return (end - start).total_seconds() / 60
+        return np.nan 
+    diff = (end - start).total_seconds() / 60
+    return max(diff, 0)
 
 df_raw["First_time_response"] = df_raw.apply(
     lambda r: diff_first_time(r["Created_ts"], r["First Response At"]),
