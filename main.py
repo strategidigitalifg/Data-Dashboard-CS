@@ -173,7 +173,6 @@ df_coster["Created At Coster"] = pd.to_datetime(
 )
 
 df_coster["First Response At"] = pd.to_datetime(
-    df_coster["First Response At"], dayfirst=True, errors="coerce"
     df_coster["First Response At"],
     errors="coerce"
 )
